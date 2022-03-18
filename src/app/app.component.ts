@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs';
 import { Post } from './post.model';
+import { PostsService } from 'src/posts.service';
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -12,49 +14,32 @@ export class AppComponent {
   loadedPosts: Post[] = [];
   isFetching = false;
 
-  constructor(private http: HttpClient){}
+  constructor(private http: HttpClient, private postService: PostsService){}
 
   ngOnInit(){
-    this.fetchPosts();
+    this.postService.fetchPosts()
+      .subscribe(posts => {
+        this.isFetching = false;
+        this.loadedPosts = posts;
+    });
+
   }
 
   onCreatePost(postData: {title: string, content: string}){
-    this.http
-    .post< {name: string} >(
-        'https://ng-complete-guide-68ffd-default-rtdb.firebaseio.com/posts.json',
-        postData
-      )
-      .subscribe(responseData => {
-        console.log(responseData)
-      });
+    this.postService.createAndStorePost(postData.title, postData.content);
   }
 
   onFetchPosts() {
-    this.fetchPosts();
+    this.isFetching = true;
+    this.postService.fetchPosts()
+      .subscribe(posts => {
+        this.isFetching = false;
+        this.loadedPosts = posts;
+    });
   }
 
   onClearPosts() {
     // Send Http request
   }
 
-  private fetchPosts(){
-    this.isFetching = true;
-    this.http.get<{ [key:string]: Post } >('https://ng-complete-guide-68ffd-default-rtdb.firebaseio.com/posts.json')
-      .pipe(
-        map(responseData => {
-        const postsArray = [];
-        for(const key in responseData){
-            if(responseData.hasOwnProperty(key)){
-            //postsArray.push({ ...JSON.parse(JSON.stringify(responseData))[key], id: key})
-            postsArray.push({ ...responseData[key], id: key})
-          }
-        }
-        return postsArray;
-      })
-      )
-      .subscribe(posts => {
-        this.isFetching = false;
-        this.loadedPosts = posts;
-      });
-  }
 }
