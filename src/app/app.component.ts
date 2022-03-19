@@ -28,7 +28,6 @@ export class AppComponent implements OnInit, OnDestroy {
         this.isFetching = false;
         this.loadedPosts = posts;
     });
-
   }
 
   onCreatePost(postData: {title: string, content: string}){
@@ -42,6 +41,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.isFetching = false;
         this.loadedPosts = posts;
     }, error => {
+        this.isFetching = false;
         this.error = error.message;
         console.log(error);
     });
